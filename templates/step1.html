@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.chart-desc-box {
+  background: linear-gradient(135deg, #f8faff, #eef2ff);
+  border: 1px solid #d0d9f5;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+.chart-desc-box h6 {
+  color: #2c3e7a;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4C72B0;
+  padding-bottom: 6px;
+}
+.metric-badge {
+  display: inline-block;
+  background: #4C72B0;
+  color: white;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 2px;
+}
+.metric-badge.green { background: #55A868; }
+.metric-badge.orange { background: #DD8452; }
+.metric-badge.red { background: #c44e52; }
+.metric-badge.purple { background: #9467bd; }
+.point-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+.point-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.point-text { font-size: 0.88rem; color: #444; line-height: 1.5; }
+.point-text strong { color: #2c3e7a; }
+</style>
+
+<div class="page-header">
+  <span class="badge-step mb-2">Step 1</span>
+  <h2><i class="fas fa-database me-2"></i>Data Loading & Overview</h2>
+  <p>Loading the Mall_Customers.csv dataset and inspecting its structure, types, and quality before any analysis.</p>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-code me-2"></i>Code — Load Data</h5>
+  <div class="code-block">
+<span class="kw">import</span> pandas <span class="kw">as</span> pd<br>
+<span class="kw">import</span> numpy <span class="kw">as</span> np<br><br>
+<span class="cm"># Load dataset</span><br>
+df = pd.<span class="fn">read_csv</span>(<span class="str">'Mall_Customers.csv'</span>)<br>
+df.columns = [<span class="str">'CustomerID'</span>, <span class="str">'Genre'</span>, <span class="str">'Age'</span>, <span class="str">'Annual_Income'</span>, <span class="str">'Spending_Score'</span>]<br><br>
+<span class="fn">print</span>(df.shape)           <span class="cm"># (200, 5) — 200 rows, 5 columns</span><br>
+<span class="fn">print</span>(df.dtypes)          <span class="cm"># Check data types of each column</span><br>
+<span class="fn">print</span>(df.isnull().<span class="fn">sum</span>())  <span class="cm"># Check for missing/null values</span><br>
+<span class="fn">print</span>(df.<span class="fn">describe</span>())      <span class="cm"># Statistical summary</span>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-box"><div class="num">{{ info.shape[0] }}</div><div class="label">Total Customers</div></div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-box" style="background:linear-gradient(135deg,#27a765,#1a7a4a)">
+      <div class="num">{{ info.shape[1] }}</div><div class="label">Features / Columns</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-box" style="background:linear-gradient(135deg,#c05a3a,#7a3a2c)">
+      <div class="num">0</div><div class="label">Missing Values</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-box" style="background:linear-gradient(135deg,#8c4ab0,#5a2c7a)">
+      <div class="num">{{ info.genre_counts.get('Female',0) }}/{{ info.genre_counts.get('Male',0) }}</div>
+      <div class="label">Female / Male Split</div>
+    </div>
+  </div>
+</div>
+
+<!-- Table 1: Head -->
+<div class="card-custom">
+  <h5><i class="fas fa-eye me-2"></i>Table 1 — First 5 Rows of Dataset (df.head())</h5>
+  {{ info.head | safe }}
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Table Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+      <code>df.head()</code> shows the first 5 rows of the loaded dataset. This is always the first thing to check after loading data — it confirms the data loaded correctly, shows the column names, and gives a quick preview of the values.
+    </p>
+    <div class="point-row"><span class="point-icon">🆔</span><div class="point-text"><strong>CustomerID:</strong> Unique ID for each customer (0001–0200). This is just an identifier — not used in clustering since it carries no behavioral information.</div></div>
+    <div class="point-row"><span class="point-icon">👤</span><div class="point-text"><strong>Genre:</strong> Gender of the customer (Male / Female). Categorical feature — used for EDA color-coding but not directly for K-Means clustering.</div></div>
+    <div class="point-row"><span class="point-icon">🎂</span><div class="point-text"><strong>Age:</strong> Customer age in years. Numeric feature ranging from 18 to 70. Used as supporting context in cluster analysis.</div></div>
+    <div class="point-row"><span class="point-icon">💵</span><div class="point-text"><strong>Annual_Income (k$):</strong> Annual income in thousands of dollars. Key numeric feature — one of the two main clustering features.</div></div>
+    <div class="point-row"><span class="point-icon">🛒</span><div class="point-text"><strong>Spending_Score (1–100):</strong> A score assigned by the mall based on customer purchasing behavior. Score of 1 = lowest spender, 100 = highest spender. This is the most important feature for segmentation.</div></div>
+    <div class="mt-3">
+      <span class="metric-badge">📐 Method: pandas.DataFrame.head()</span>
+      <span class="metric-badge green">Rows: 5 (preview)</span>
+      <span class="metric-badge orange">Columns: 5 features</span>
+    </div>
+  </div>
+</div>
+
+<!-- Table 2: Describe -->
+<div class="card-custom">
+  <h5><i class="fas fa-calculator me-2"></i>Table 2 — Statistical Summary (df.describe())</h5>
+  {{ info.describe | safe }}
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Table Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+      <code>df.describe()</code> automatically computes <strong>8 key statistics</strong> for every numeric column. This is essential for understanding the range, center, and spread of each feature before applying machine learning.
+    </p>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="point-row"><span class="point-icon">🔢</span><div class="point-text"><strong>count:</strong> Number of non-null values. All 200 here — confirms no missing data.</div></div>
+        <div class="point-row"><span class="point-icon">➕</span><div class="point-text"><strong>mean:</strong> Average value. Average age ≈ 38 years, average income ≈ $60k, average spending score ≈ 50.</div></div>
+        <div class="point-row"><span class="point-icon">📏</span><div class="point-text"><strong>std (Standard Deviation):</strong> How spread out the values are. High std means customers vary a lot in that feature — good for clustering.</div></div>
+        <div class="point-row"><span class="point-icon">⬇️</span><div class="point-text"><strong>min:</strong> Lowest value in the column. Age min = 18, Income min = 15k, Spending min = 1.</div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>25% (Q1):</strong> 25% of customers are below this value. The lower quartile — helps spot if data is skewed left.</div></div>
+        <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>50% (Median):</strong> The middle value. If mean ≈ median, the data is symmetric. If they differ, the data is skewed.</div></div>
+        <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>75% (Q3):</strong> 75% of customers are below this value. The upper quartile — helps spot outliers above this.</div></div>
+        <div class="point-row"><span class="point-icon">⬆️</span><div class="point-text"><strong>max:</strong> Highest value in the column. Age max = 70, Income max = 137k, Spending max = 99.</div></div>
+      </div>
+    </div>
+    <div class="mt-3">
+      <span class="metric-badge">📐 Method: pandas.DataFrame.describe()</span>
+      <span class="metric-badge green">Stats: count, mean, std, min, Q1, median, Q3, max</span>
+      <span class="metric-badge orange">Only numeric columns included</span>
+    </div>
+  </div>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-check-circle me-2 text-success"></i>Key Observations from Step 1</h5>
+  <div class="row g-3">
+    <div class="col-md-4"><div class="insight-card"><h6>✅ No Missing Values</h6><p>All 200 customers have complete data across all 5 columns. No data cleaning or imputation is needed — the dataset is ready to use.</p></div></div>
+    <div class="col-md-4"><div class="insight-card"><h6>🔢 Mixed Data Types</h6><p>Genre is categorical (text), while Age, Annual Income, and Spending Score are numeric (int). Categorical data cannot be directly used in K-Means without encoding.</p></div></div>
+    <div class="col-md-4"><div class="insight-card"><h6>📏 Features Need Scaling</h6><p>Annual Income ranges 15–137 while Spending Score ranges 1–100. These different scales mean we must apply <strong>StandardScaler</strong> before clustering so neither feature dominates.</p></div></div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-end">
+  <a href="/step2" class="btn btn-primary-custom"><i class="fas fa-arrow-right me-2"></i>Next: Exploratory Data Analysis</a>
+</div>
+{% endblock %}

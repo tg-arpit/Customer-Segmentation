@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.chart-desc-box {
+  background: linear-gradient(135deg, #f8faff, #eef2ff);
+  border: 1px solid #d0d9f5;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+.chart-desc-box h6 {
+  color: #2c3e7a;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4C72B0;
+  padding-bottom: 6px;
+}
+.metric-badge {
+  display: inline-block;
+  background: #4C72B0;
+  color: white;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 2px;
+}
+.metric-badge.green { background: #55A868; }
+.metric-badge.orange { background: #DD8452; }
+.metric-badge.red { background: #c44e52; }
+.metric-badge.purple { background: #9467bd; }
+.point-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+.point-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.point-text { font-size: 0.88rem; color: #444; line-height: 1.5; }
+.point-text strong { color: #2c3e7a; }
+</style>
+
+<div class="page-header">
+  <span class="badge-step mb-2">Step 3</span>
+  <h2><i class="fas fa-search me-2"></i>Optimal K Selection</h2>
+  <p>Finding the best number of clusters using the Elbow Method and Silhouette Score.</p>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-code me-2"></i>Code — Find Best K</h5>
+  <div class="code-block">
+<span class="kw">from</span> sklearn.cluster <span class="kw">import</span> KMeans<br>
+<span class="kw">from</span> sklearn.preprocessing <span class="kw">import</span> StandardScaler<br>
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> silhouette_score<br><br>
+X = df[[<span class="str">'Annual_Income'</span>, <span class="str">'Spending_Score'</span>]].values<br>
+scaler = <span class="fn">StandardScaler</span>()<br>
+X_scaled = scaler.<span class="fn">fit_transform</span>(X)<br><br>
+inertias, sil_scores = [], []<br>
+<span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(2, 11):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;km = <span class="fn">KMeans</span>(n_clusters=k, random_state=42, n_init=10)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;labels = km.<span class="fn">fit_predict</span>(X_scaled)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;inertias.<span class="fn">append</span>(km.inertia_)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># WCSS</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;sil_scores.<span class="fn">append</span>(<span class="fn">silhouette_score</span>(X_scaled, labels))<br>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-4">
+    <div class="stat-box"><div class="num">k = {{ best_k }}</div><div class="label">Best K by Silhouette Score</div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-box" style="background:linear-gradient(135deg,#27a765,#1a7a4a)">
+      <div class="num">{{ best_sil }}</div><div class="label">Highest Silhouette Score</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-box" style="background:linear-gradient(135deg,#c05a3a,#7a3a2c)">
+      <div class="num">k = 5</div><div class="label">Final Chosen K (Elbow + Score)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 5: Elbow + Silhouette -->
+<div class="card-custom">
+  <h5><i class="fas fa-chart-line me-2"></i>Chart 5 — Elbow Method & Silhouette Score</h5>
+  <img src="data:image/png;base64,{{ chart }}" class="chart-img">
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:14px">
+      This chart has <strong>two line graphs side by side</strong> that help us determine the <strong>best number of clusters (k)</strong> to use in K-Means. Both graphs test k values from 2 to 10 and measure how good each k is. The <strong>red dashed vertical line</strong> marks the optimal k=5.
+    </p>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div style="background:#fff3f0;border-radius:10px;padding:16px;border-left:4px solid #c44e52">
+          <div style="font-weight:700;color:#c44e52;margin-bottom:8px">📉 Left Graph — Elbow Method (WCSS / Inertia)</div>
+          <div class="point-row"><span class="point-icon">📐</span><div class="point-text"><strong>What is WCSS?</strong> Within-Cluster Sum of Squares — it measures how tightly packed customers are inside each cluster. Lower = better (customers are closer to their cluster center).</div></div>
+          <div class="point-row"><span class="point-icon">📉</span><div class="point-text"><strong>What the line shows:</strong> As k increases from 2→10, WCSS keeps dropping. But after k=5, the drop becomes very small — that sharp bend is called the <strong>"Elbow"</strong>.</div></div>
+          <div class="point-row"><span class="point-icon">🎯</span><div class="point-text"><strong>Decision Rule:</strong> The elbow point is where adding more clusters stops giving significant improvement. Here the elbow clearly appears at <strong>k=5</strong>.</div></div>
+          <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>Formula used:</strong> WCSS = Σ (distance of each point from its cluster center)²</div></div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div style="background:#f0fff5;border-radius:10px;padding:16px;border-left:4px solid #55A868">
+          <div style="font-weight:700;color:#27a765;margin-bottom:8px">📈 Right Graph — Silhouette Score</div>
+          <div class="point-row"><span class="point-icon">📐</span><div class="point-text"><strong>What is Silhouette Score?</strong> It measures how well each customer fits in its own cluster vs how different it is from other clusters. Score ranges from <strong>-1 to +1</strong>. Closer to 1 = better separation.</div></div>
+          <div class="point-row"><span class="point-icon">📈</span><div class="point-text"><strong>What the line shows:</strong> The score peaks at a certain k value — that is the best number of clusters because customers are most clearly separated from each other.</div></div>
+          <div class="point-row"><span class="point-icon">🎯</span><div class="point-text"><strong>Our result:</strong> Silhouette Score peaks at <strong>k={{ best_k }}</strong> with a score of <strong>{{ best_sil }}</strong> — confirming 5 clusters gives the best separation.</div></div>
+          <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>Formula:</strong> s(i) = (b(i) - a(i)) / max(a(i), b(i)) where a = avg distance within cluster, b = avg distance to nearest other cluster.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3 p-3" style="background:#fffbf0;border-radius:10px;border-left:4px solid #DD8452">
+      <div style="font-weight:700;color:#b36200;margin-bottom:6px">💡 Why We Chose k=5</div>
+      <p style="font-size:0.87rem;color:#555;margin:0">Both methods agree — the Elbow bends at k=5 and the Silhouette Score confirms best cluster quality at k=5. The red dashed line marks this choice on both graphs. Using k=5 gives us 5 meaningful, well-separated customer segments without over-complicating the model.</p>
+    </div>
+
+    <div class="mt-3">
+      <span class="metric-badge">📐 Metric 1: WCSS / Inertia (Elbow)</span>
+      <span class="metric-badge green">📐 Metric 2: Silhouette Score</span>
+      <span class="metric-badge orange">sklearn.metrics.silhouette_score()</span>
+      <span class="metric-badge red">KMeans.inertia_</span>
+      <span class="metric-badge purple">StandardScaler (features normalized first)</span>
+    </div>
+  </div>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-info-circle me-2 text-primary"></i>Why We Normalize Features Before Finding K</h5>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="insight-card">
+        <h6>⚖️ StandardScaler Applied</h6>
+        <p>Annual Income ranges from 15–135 and Spending Score from 1–100. Without scaling, income would dominate clustering simply due to its larger values. StandardScaler transforms both to mean=0, std=1 so they contribute equally.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="insight-card">
+        <h6>🎯 Features Used for K Selection</h6>
+        <p>Only <strong>Annual Income</strong> and <strong>Spending Score</strong> were used to find optimal k — these two features showed the clearest natural groupings in the EDA scatter plot, making them ideal clustering features.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between">
+  <a href="/step2" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Back</a>
+  <a href="/step4" class="btn btn-primary-custom"><i class="fas fa-arrow-right me-2"></i>Next: Run K-Means</a>
+</div>
+{% endblock %}

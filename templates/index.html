@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+  <h2><i class="fas fa-users me-2"></i>Customer Segmentation using K-Means Clustering</h2>
+  <p>Group retail customers based on purchasing behavior using unsupervised machine learning.</p>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-box" style="background: linear-gradient(135deg, #2c3e7a, #4C72B0)">
+      <div class="num">200</div>
+      <div class="label">Total Customers</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-box" style="background: linear-gradient(135deg, #1a7a4a, #27a765)">
+      <div class="num">5</div>
+      <div class="label">Features</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-box" style="background: linear-gradient(135deg, #7a3a2c, #c05a3a)">
+      <div class="num">5</div>
+      <div class="label">Customer Segments</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-box" style="background: linear-gradient(135deg, #5a2c7a, #8c4ab0)">
+      <div class="num">K-Means</div>
+      <div class="label">Algorithm Used</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-8">
+    <div class="card-custom">
+      <h5><i class="fas fa-project-diagram me-2"></i>Project Pipeline</h5>
+      <div class="d-flex flex-column gap-3">
+        {% set steps = [
+          ('1', 'fa-database', '#4C72B0', 'Data Loading & Overview', 'Import Mall_Customers.csv, inspect shape, null values, and feature types.', '/step1'),
+          ('2', 'fa-chart-bar', '#55A868', 'Exploratory Data Analysis', 'Visualize distributions, gender split, correlations, and scatter plots.', '/step2'),
+          ('3', 'fa-search', '#DD8452', 'Optimal K Selection', 'Use Elbow Method and Silhouette Score to find the best number of clusters.', '/step3'),
+          ('4', 'fa-object-group', '#c44e52', 'K-Means Clustering', 'Fit KMeans, predict labels, visualize clusters with centroids.', '/step4'),
+          ('5', 'fa-lightbulb', '#9467bd', 'Business Insights', 'Translate clusters into actionable marketing strategies.', '/step5'),
+        ] %}
+        {% for num, icon, color, title, desc, url in steps %}
+        <a href="{{ url }}" class="text-decoration-none">
+          <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: #f8f9ff; border: 1px solid #e8ecf8; transition: all 0.2s;" onmouseover="this.style.background='#eef1fd'" onmouseout="this.style.background='#f8f9ff'">
+            <div style="width:44px;height:44px;border-radius:12px;background:{{ color }};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="fas {{ icon }}" style="color:white;font-size:1rem"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;color:#2c3e7a;font-size:0.92rem">Step {{ num }}: {{ title }}</div>
+              <div style="color:#666;font-size:0.82rem">{{ desc }}</div>
+            </div>
+            <i class="fas fa-arrow-right ms-auto" style="color:#aaa"></i>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card-custom">
+      <h5><i class="fas fa-toolbox me-2"></i>Tech Stack</h5>
+      {% for tool, icon, desc in [
+        ('Python 3', 'fab fa-python', 'Core language'),
+        ('Pandas', 'fas fa-table', 'Data manipulation'),
+        ('Scikit-learn', 'fas fa-brain', 'KMeans, Scaler'),
+        ('Matplotlib', 'fas fa-chart-line', 'Visualizations'),
+        ('Seaborn', 'fas fa-palette', 'Statistical plots'),
+        ('Flask', 'fas fa-server', 'Web interface'),
+      ] %}
+      <div class="d-flex align-items-center gap-2 mb-2 p-2 rounded-2" style="background:#f4f6fb">
+        <i class="{{ icon }}" style="color:#4C72B0;width:20px"></i>
+        <strong style="font-size:0.85rem;color:#2c3e7a">{{ tool }}</strong>
+        <span class="text-muted ms-auto" style="font-size:0.78rem">{{ desc }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="card-custom">
+      <h5><i class="fas fa-database me-2"></i>Dataset Info</h5>
+      <p class="text-muted mb-2" style="font-size:0.85rem">Mall Customer Segmentation Dataset</p>
+      <ul class="list-unstyled" style="font-size:0.85rem">
+        <li><i class="fas fa-check-circle text-success me-1"></i>CustomerID</li>
+        <li><i class="fas fa-check-circle text-success me-1"></i>Genre (Male/Female)</li>
+        <li><i class="fas fa-check-circle text-success me-1"></i>Age</li>
+        <li><i class="fas fa-check-circle text-success me-1"></i>Annual Income (k$)</li>
+        <li><i class="fas fa-check-circle text-success me-1"></i>Spending Score (1-100)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

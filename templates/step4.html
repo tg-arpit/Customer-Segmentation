@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.chart-desc-box {
+  background: linear-gradient(135deg, #f8faff, #eef2ff);
+  border: 1px solid #d0d9f5;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+.chart-desc-box h6 {
+  color: #2c3e7a;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4C72B0;
+  padding-bottom: 6px;
+}
+.metric-badge {
+  display: inline-block;
+  background: #4C72B0;
+  color: white;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 2px;
+}
+.metric-badge.green { background: #55A868; }
+.metric-badge.orange { background: #DD8452; }
+.metric-badge.red { background: #c44e52; }
+.metric-badge.purple { background: #9467bd; }
+.point-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+.point-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.point-text { font-size: 0.88rem; color: #444; line-height: 1.5; }
+.point-text strong { color: #2c3e7a; }
+.cluster-legend {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+}
+.cluster-pill {
+  border-radius: 20px; padding: 5px 14px; font-size: 0.8rem; font-weight: 600; color: white;
+}
+</style>
+
+<div class="page-header">
+  <span class="badge-step mb-2">Step 4</span>
+  <h2><i class="fas fa-object-group me-2"></i>K-Means Clustering Results</h2>
+  <p>Applying K-Means algorithm, visualizing customer segments, and analyzing cluster profiles.</p>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-code me-2"></i>Code — Apply K-Means</h5>
+  <div class="code-block">
+km = <span class="fn">KMeans</span>(n_clusters={{ results.k }}, random_state=42, n_init=10)<br>
+labels = km.<span class="fn">fit_predict</span>(X_scaled)<br>
+df[<span class="str">'Cluster'</span>] = labels<br><br>
+<span class="cm"># Inverse transform centroids back to original scale</span><br>
+centroids = scaler.<span class="fn">inverse_transform</span>(km.cluster_centers_)<br><br>
+<span class="cm"># Plot with centroid markers</span><br>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>({{ results.k }}):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sub = df[df[<span class="str">'Cluster'</span>] == i]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;plt.<span class="fn">scatter</span>(sub[<span class="str">'Annual_Income'</span>], sub[<span class="str">'Spending_Score'</span>])<br>
+plt.<span class="fn">scatter</span>(centroids[:, 0], centroids[:, 1], s=250, marker=<span class="str">'X'</span>, c=<span class="str">'black'</span>, label=<span class="str">'Centroids'</span>)
+  </div>
+</div>
+
+<!-- K selector -->
+<div class="card-custom">
+  <h5><i class="fas fa-sliders-h me-2"></i>Interactive — Try Different K Values</h5>
+  <p style="font-size:0.88rem;color:#666;margin-bottom:12px">Change the number of clusters and see how the segmentation changes in real time.</p>
+  <form method="POST" class="d-flex align-items-center gap-3">
+    <label class="fw-semibold">Number of Clusters (k):</label>
+    <select name="k" class="form-select w-auto">
+      {% for v in [3,4,5,6,7] %}
+      <option value="{{ v }}" {% if v == results.k %}selected{% endif %}>k = {{ v }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary-custom">Apply Clustering</button>
+  </form>
+</div>
+
+<div class="row g-4 mb-2">
+  <div class="col-md-4">
+    <div class="stat-box"><div class="num">{{ results.k }}</div><div class="label">Clusters Applied</div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-box" style="background:linear-gradient(135deg,#27a765,#1a7a4a)">
+      <div class="num">{{ results.silhouette }}</div><div class="label">Silhouette Score (Quality)</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-box" style="background:linear-gradient(135deg,#8c4ab0,#5a2c7a)">
+      <div class="num">{{ results.n_customers }}</div><div class="label">Total Customers Segmented</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 6: Main 2D Cluster Plot -->
+<div class="card-custom">
+  <h5><i class="fas fa-chart-scatter me-2"></i>Chart 6 — Main Cluster Plot: Annual Income vs Spending Score ⭐</h5>
+  <img src="data:image/png;base64,{{ results.chart_2d }}" class="chart-img">
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:14px">
+      This is the <strong>most important chart in the entire project</strong>. It is a <strong>2D Scatter Plot</strong> where every dot = one customer. The X-axis shows Annual Income, Y-axis shows Spending Score, and each color represents a different customer cluster assigned by K-Means. The large <strong>black X marks</strong> are the <strong>centroids</strong> — the mathematical center point of each cluster.
+    </p>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="point-row"><span class="point-icon">🟢</span><div class="point-text"><strong>Top-Right (High Income, High Spending):</strong> The most valuable customers — they earn well AND spend generously. These are the "High Value Targets" your business should retain at all costs.</div></div>
+        <div class="point-row"><span class="point-icon">🔴</span><div class="point-text"><strong>Top-Left (Low Income, High Spending):</strong> "Impulsive Buyers" — they spend a lot despite modest income. Likely driven by emotions. Flash sales and limited-time offers work best.</div></div>
+        <div class="point-row"><span class="point-icon">🔵</span><div class="point-text"><strong>Bottom-Right (High Income, Low Spending):</strong> "Conservative Savers" — wealthy but cautious. They need trust-building campaigns and quality assurance to open their wallets.</div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="point-row"><span class="point-icon">⚫</span><div class="point-text"><strong>Bottom-Left (Low Income, Low Spending):</strong> "Careful Spenders" — budget-conscious shoppers. Respond well to discounts, loyalty points, and value bundles.</div></div>
+        <div class="point-row"><span class="point-icon">🟡</span><div class="point-text"><strong>Center (Medium Income, Medium Spending):</strong> "Standard Customers" — the average shopper. Can be upsold to premium products with the right seasonal offers.</div></div>
+        <div class="point-row"><span class="point-icon">✖️</span><div class="point-text"><strong>Black X (Centroids):</strong> The mathematical center of each cluster. K-Means calculated these by minimizing the distance of all points from their nearest centroid.</div></div>
+      </div>
+    </div>
+    <div class="mt-3">
+      <span class="metric-badge">📐 Algorithm: K-Means (sklearn)</span>
+      <span class="metric-badge green">Metric: Euclidean Distance</span>
+      <span class="metric-badge orange">X-axis: Annual Income (k$)</span>
+      <span class="metric-badge red">Y-axis: Spending Score (1–100)</span>
+      <span class="metric-badge purple">✖ = Cluster Centroids</span>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 7 & 8 -->
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="card-custom">
+      <h5><i class="fas fa-chart-scatter me-2"></i>Chart 7 — Age vs Annual Income by Cluster</h5>
+      <img src="data:image/png;base64,{{ results.chart_age }}" class="chart-img">
+      <div class="chart-desc-box">
+        <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+        <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+          This <strong>Scatter Plot</strong> views the same clusters from a different angle — Age on X-axis and Annual Income on Y-axis. The cluster colors are the same as Chart 6. This chart reveals <strong>how age relates to income within each customer group</strong>.
+        </p>
+        <div class="point-row"><span class="point-icon">👶</span><div class="point-text"><strong>Younger customers (Age 18–30):</strong> Mostly found in lower income brackets but interestingly have varied spending scores — some are impulsive buyers despite low income.</div></div>
+        <div class="point-row"><span class="point-icon">👨</span><div class="point-text"><strong>Middle-aged customers (30–50):</strong> Spread across all income levels. This is the largest and most diverse group in the dataset.</div></div>
+        <div class="point-row"><span class="point-icon">👴</span><div class="point-text"><strong>Older customers (50+):</strong> Tend to cluster in the middle income range and lower spending score — they are more financially conservative.</div></div>
+        <div class="point-row"><span class="point-icon">💡</span><div class="point-text"><strong>Key insight:</strong> Clusters don't separate as cleanly on Age vs Income as they do on Income vs Spending — confirming Income + Spending Score were the right features to cluster on.</div></div>
+        <div class="mt-3">
+          <span class="metric-badge">📐 Metric: Scatter Plot (2D)</span>
+          <span class="metric-badge green">X: Age | Y: Annual Income</span>
+          <span class="metric-badge orange">Color: KMeans Cluster Label</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="card-custom">
+      <h5><i class="fas fa-pie-chart me-2"></i>Chart 8 — Cluster Size Distribution</h5>
+      <img src="data:image/png;base64,{{ results.chart_size }}" class="chart-img">
+      <div class="chart-desc-box">
+        <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+        <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+          This <strong>Pie Chart</strong> shows what <strong>percentage of the 200 customers</strong> falls into each of the 5 clusters. It answers the question: "How big is each customer segment?"
+        </p>
+        <div class="point-row"><span class="point-icon">⚖️</span><div class="point-text"><strong>Balanced segments:</strong> Each cluster contains approximately <strong>~20% of customers</strong> — around 38–42 people per cluster. This means K-Means found genuinely equal-sized natural groups, not skewed results.</div></div>
+        <div class="point-row"><span class="point-icon">✅</span><div class="point-text"><strong>Good sign for the model:</strong> Balanced cluster sizes indicate the algorithm worked correctly. Highly unequal sizes would suggest the wrong k was chosen.</div></div>
+        <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>Business use:</strong> Knowing segment sizes helps allocate marketing budget proportionally. Bigger segments get more resources.</div></div>
+        <div class="mt-3">
+          <span class="metric-badge">📐 Metric: Proportional Count (%)</span>
+          <span class="metric-badge green">value_counts() per cluster</span>
+          <span class="metric-badge orange">matplotlib.pyplot.pie()</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 9: Profile bars -->
+<div class="card-custom">
+  <h5><i class="fas fa-chart-bar me-2"></i>Chart 9 — Cluster Profiles (Mean Values per Cluster)</h5>
+  <img src="data:image/png;base64,{{ results.chart_profile }}" class="chart-img">
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:14px">
+      This chart contains <strong>3 bar graphs side by side</strong> — one for each feature (Age, Annual Income, Spending Score). Each bar represents the <strong>average value of that feature for one cluster</strong>. The numbers on top of each bar are the exact mean values. This is a <strong>cluster profiling chart</strong> — it answers "What does the average customer in each cluster look like?"
+    </p>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e0e6f8">
+          <div style="font-weight:700;color:#2c3e7a;margin-bottom:8px">📊 Left — Average Age per Cluster</div>
+          <div class="point-row"><span class="point-icon">📌</span><div class="point-text">Shows whether each cluster skews young or old. Helps decide if age-targeted campaigns are worth running for specific segments.</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e0e6f8">
+          <div style="font-weight:700;color:#2c3e7a;margin-bottom:8px">💰 Middle — Average Annual Income per Cluster</div>
+          <div class="point-row"><span class="point-icon">📌</span><div class="point-text">Clearly separates high-income vs low-income clusters. You can instantly see which segments are wealthier and adjust premium product targeting accordingly.</div></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e0e6f8">
+          <div style="font-weight:700;color:#2c3e7a;margin-bottom:8px">🛒 Right — Average Spending Score per Cluster</div>
+          <div class="point-row"><span class="point-icon">📌</span><div class="point-text">The most important bar chart. Shows which clusters spend the most. High-spending clusters should receive premium marketing; low-spending ones need discount incentives.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 p-3" style="background:#fffbf0;border-radius:10px;border-left:4px solid #DD8452">
+      <div style="font-weight:700;color:#b36200;margin-bottom:6px">💡 How to Read These Bars</div>
+      <p style="font-size:0.87rem;color:#555;margin:0">Each colored bar = one cluster. Taller bar = higher average value. The number printed on top of each bar is the exact mean. Compare bars across clusters to understand the personality of each customer segment.</p>
+    </div>
+    <div class="mt-3">
+      <span class="metric-badge">📐 Metric: Group Mean (df.groupby().mean())</span>
+      <span class="metric-badge green">X-axis: Cluster Number</span>
+      <span class="metric-badge orange">Y-axis: Mean Feature Value</span>
+      <span class="metric-badge red">matplotlib.pyplot.bar()</span>
+      <span class="metric-badge purple">3 subplots: Age, Income, Spending</span>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Table -->
+<div class="card-custom">
+  <h5><i class="fas fa-table me-2"></i>Cluster Summary Table</h5>
+  <p style="font-size:0.88rem;color:#666;margin-bottom:12px">Complete statistical profile of all clusters — count, average age, average income, and average spending score per segment.</p>
+  {{ results.summary_html | safe }}
+</div>
+
+<div class="d-flex justify-content-between">
+  <a href="/step3" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Back</a>
+  <a href="/step5" class="btn btn-primary-custom"><i class="fas fa-arrow-right me-2"></i>Next: Business Insights</a>
+</div>
+{% endblock %}

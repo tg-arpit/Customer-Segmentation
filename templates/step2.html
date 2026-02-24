@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+.chart-desc-box {
+  background: linear-gradient(135deg, #f8faff, #eef2ff);
+  border: 1px solid #d0d9f5;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-top: 16px;
+}
+.chart-desc-box h6 {
+  color: #2c3e7a;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #4C72B0;
+  padding-bottom: 6px;
+}
+.metric-badge {
+  display: inline-block;
+  background: #4C72B0;
+  color: white;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 2px;
+}
+.metric-badge.green { background: #55A868; }
+.metric-badge.orange { background: #DD8452; }
+.metric-badge.red { background: #c44e52; }
+.metric-badge.purple { background: #9467bd; }
+.point-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+.point-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.point-text { font-size: 0.88rem; color: #444; line-height: 1.5; }
+.point-text strong { color: #2c3e7a; }
+</style>
+
+<div class="page-header">
+  <span class="badge-step mb-2">Step 2</span>
+  <h2><i class="fas fa-chart-bar me-2"></i>Exploratory Data Analysis (EDA)</h2>
+  <p>Understanding the dataset through visualizations — distributions, gender split, correlations, and scatter plots.</p>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-code me-2"></i>Code — EDA Visualizations</h5>
+  <div class="code-block">
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt<br>
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns<br><br>
+<span class="cm"># Feature distributions</span><br>
+fig, axes = plt.<span class="fn">subplots</span>(1, 3, figsize=(14, 4))<br>
+<span class="kw">for</span> ax, col <span class="kw">in</span> <span class="fn">zip</span>(axes, [<span class="str">'Age'</span>, <span class="str">'Annual_Income'</span>, <span class="str">'Spending_Score'</span>]):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ax.<span class="fn">hist</span>(df[col], bins=20, color=<span class="str">'#4C72B0'</span>)<br><br>
+<span class="cm"># Correlation heatmap</span><br>
+sns.<span class="fn">heatmap</span>(df[[<span class="str">'Age'</span>,<span class="str">'Annual_Income'</span>,<span class="str">'Spending_Score'</span>]].<span class="fn">corr</span>(), annot=<span class="kw">True</span>, cmap=<span class="str">'coolwarm'</span>)<br><br>
+<span class="cm"># Scatter: Income vs Spending by Gender</span><br>
+<span class="kw">for</span> genre <span class="kw">in</span> df[<span class="str">'Genre'</span>].<span class="fn">unique</span>():<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sub = df[df[<span class="str">'Genre'</span>] == genre]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;plt.<span class="fn">scatter</span>(sub[<span class="str">'Annual_Income'</span>], sub[<span class="str">'Spending_Score'</span>], label=genre)
+  </div>
+</div>
+
+<!-- Chart 1: Distributions -->
+<div class="card-custom">
+  <h5><i class="fas fa-chart-area me-2"></i>Chart 1 — Feature Distributions (3 Histograms)</h5>
+  <img src="data:image/png;base64,{{ charts.distributions }}" class="chart-img">
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+      This chart contains <strong>3 histograms side by side</strong> — one for each numeric feature. A histogram splits values into bins and shows how many customers fall into each range. It helps us understand the <strong>shape, spread, and distribution</strong> of each feature before applying any ML algorithm.
+    </p>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="point-row"><span class="point-icon">📊</span><div class="point-text"><strong>Age Histogram:</strong> Most customers are aged <strong>25–40 years</strong>. The chart peaks around 30–35, with very few customers below 18 or above 65. This shows the mall primarily attracts a young-to-middle-age crowd.</div></div>
+      </div>
+      <div class="col-md-4">
+        <div class="point-row"><span class="point-icon">💰</span><div class="point-text"><strong>Annual Income Histogram:</strong> Income is spread fairly evenly from $15k to $135k, with a peak around <strong>$50k–$80k</strong>. This suggests a mix of lower, middle, and upper-income shoppers visiting the mall.</div></div>
+      </div>
+      <div class="col-md-4">
+        <div class="point-row"><span class="point-icon">🛒</span><div class="point-text"><strong>Spending Score Histogram:</strong> Shows <strong>two visible peaks</strong> — one around score 20–40 (low spenders) and one around 60–80 (high spenders). This bimodal pattern already hints that customers naturally split into spending groups.</div></div>
+      </div>
+    </div>
+    <div class="mt-3">
+      <span class="metric-badge">📐 Metric: Histogram (Frequency Count)</span>
+      <span class="metric-badge green">bins=20</span>
+      <span class="metric-badge orange">matplotlib.pyplot.hist()</span>
+      <span class="metric-badge purple">X-axis: Feature Value | Y-axis: Customer Count</span>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 2 & 3 side by side -->
+<div class="row g-4">
+  <div class="col-md-5">
+    <div class="card-custom">
+      <h5><i class="fas fa-venus-mars me-2"></i>Chart 2 — Gender Distribution</h5>
+      <img src="data:image/png;base64,{{ charts.gender_pie }}" class="chart-img">
+      <div class="chart-desc-box">
+        <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+        <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+          This <strong>Pie Chart</strong> shows the proportion of Male vs Female customers in the dataset. Each slice represents one gender category as a percentage of the total 200 customers.
+        </p>
+        <div class="point-row"><span class="point-icon">🔵</span><div class="point-text"><strong>Female (56%):</strong> More than half of mall customers are female, making them the primary shopping audience.</div></div>
+        <div class="point-row"><span class="point-icon">🟠</span><div class="point-text"><strong>Male (44%):</strong> Males are a significant minority. Campaigns should be gender-aware as spending behavior varies.</div></div>
+        <div class="point-row"><span class="point-icon">💡</span><div class="point-text"><strong>Business Insight:</strong> Female customers dominate — so product placements, promotions, and store layouts should prioritize female preferences.</div></div>
+        <div class="mt-3">
+          <span class="metric-badge">📐 Metric: Proportional Count (%)</span>
+          <span class="metric-badge green">matplotlib.pyplot.pie()</span>
+          <span class="metric-badge orange">value_counts()</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card-custom">
+      <h5><i class="fas fa-th me-2"></i>Chart 3 — Correlation Heatmap</h5>
+      <img src="data:image/png;base64,{{ charts.heatmap }}" class="chart-img">
+      <div class="chart-desc-box">
+        <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+        <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+          A <strong>Correlation Heatmap</strong> shows how strongly two numeric features are related to each other. Values range from <strong>-1 to +1</strong>. Red = positive correlation, Blue = negative correlation, White = no relationship. Numbers in each cell are the actual correlation coefficients.
+        </p>
+        <div class="point-row"><span class="point-icon">🔴</span><div class="point-text"><strong>Age vs Spending Score = -0.33:</strong> Weak negative — older customers tend to spend slightly less. As age increases, spending score decreases a little.</div></div>
+        <div class="point-row"><span class="point-icon">⚪</span><div class="point-text"><strong>Age vs Annual Income = 0.18:</strong> Almost no relationship. Income does not strongly depend on how old a customer is.</div></div>
+        <div class="point-row"><span class="point-icon">⚪</span><div class="point-text"><strong>Income vs Spending Score = 0.01:</strong> Nearly zero! This is the most important finding — <strong>rich customers do NOT always spend more</strong>. This is exactly why clustering is needed.</div></div>
+        <div class="point-row"><span class="point-icon">💡</span><div class="point-text"><strong>Why it matters for ML:</strong> Low correlation between features means they carry independent information — making them excellent inputs for K-Means clustering.</div></div>
+        <div class="mt-3">
+          <span class="metric-badge">📐 Metric: Pearson Correlation Coefficient</span>
+          <span class="metric-badge green">seaborn.heatmap()</span>
+          <span class="metric-badge orange">df.corr()</span>
+          <span class="metric-badge red">Range: -1 to +1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart 4: Scatter -->
+<div class="card-custom">
+  <h5><i class="fas fa-dot-circle me-2"></i>Chart 4 — Annual Income vs Spending Score (by Gender)</h5>
+  <img src="data:image/png;base64,{{ charts.income_vs_spending }}" class="chart-img">
+  <div class="chart-desc-box">
+    <h6><i class="fas fa-microscope me-2"></i>What This Chart Is Showing</h6>
+    <p style="font-size:0.88rem;color:#555;margin-bottom:12px">
+      This <strong>Scatter Plot</strong> plots every customer as a dot — X-axis is their Annual Income, Y-axis is their Spending Score. Each dot is colored by gender (Blue = Male, Orange = Female). This is the most revealing EDA chart because it shows <strong>natural customer groupings before any algorithm is applied</strong>.
+    </p>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="point-row"><span class="point-icon">🟢</span><div class="point-text"><strong>Top-Right cluster:</strong> High income + High spending — these are the most valuable customers who earn well and spend freely.</div></div>
+        <div class="point-row"><span class="point-icon">🔴</span><div class="point-text"><strong>Top-Left cluster:</strong> Low income + High spending — impulsive buyers who spend a lot despite modest earnings.</div></div>
+        <div class="point-row"><span class="point-icon">🔵</span><div class="point-text"><strong>Bottom-Right cluster:</strong> High income + Low spending — conservative savers who earn well but don't spend much in the mall.</div></div>
+      </div>
+      <div class="col-md-6">
+        <div class="point-row"><span class="point-icon">⚫</span><div class="point-text"><strong>Bottom-Left cluster:</strong> Low income + Low spending — careful budget-conscious shoppers.</div></div>
+        <div class="point-row"><span class="point-icon">🟡</span><div class="point-text"><strong>Center cluster:</strong> Average income + Average spending — the standard middle-ground customer group.</div></div>
+        <div class="point-row"><span class="point-icon">💡</span><div class="point-text"><strong>Key insight:</strong> You can already see <strong>5 distinct groups</strong> visually — this confirms that K-Means with k=5 will work well on this data.</div></div>
+      </div>
+    </div>
+    <div class="mt-3">
+      <span class="metric-badge">📐 Metric: 2D Scatter Plot</span>
+      <span class="metric-badge green">matplotlib.pyplot.scatter()</span>
+      <span class="metric-badge orange">X: Annual Income (k$)</span>
+      <span class="metric-badge red">Y: Spending Score (1–100)</span>
+      <span class="metric-badge purple">Color: Gender</span>
+    </div>
+  </div>
+</div>
+
+<div class="card-custom">
+  <h5><i class="fas fa-lightbulb me-2 text-warning"></i>Overall EDA Insights</h5>
+  <div class="row g-3">
+    <div class="col-md-4"><div class="insight-card"><h6>Bimodal Spending Score</h6><p>Spending Score shows two peaks — a group of low spenders and a group of high spenders — suggesting natural customer divisions.</p></div></div>
+    <div class="col-md-4"><div class="insight-card"><h6>5 Visible Clusters</h6><p>The Income vs Spending scatter plot reveals approximately 5 natural customer groupings even before applying any ML algorithm.</p></div></div>
+    <div class="col-md-4"><div class="insight-card"><h6>Low Correlation = Good Features</h6><p>Income and Spending Score have near-zero correlation (0.01), meaning they carry independent information — ideal for K-Means clustering.</p></div></div>
+  </div>
+</div>
+
+<div class="d-flex justify-content-between">
+  <a href="/step1" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Back</a>
+  <a href="/step3" class="btn btn-primary-custom"><i class="fas fa-arrow-right me-2"></i>Next: Find Optimal K</a>
+</div>
+{% endblock %}

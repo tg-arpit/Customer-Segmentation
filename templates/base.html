@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Segmentation | K-Means Clustering</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2c3e7a;
+      --accent: #4C72B0;
+      --light-bg: #f4f6fb;
+    }
+    body { background: var(--light-bg); font-family: 'Segoe UI', sans-serif; }
+    .sidebar {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #1a2456 0%, #2c3e7a 60%, #3a5098 100%);
+      padding: 0;
+    }
+    .sidebar-brand {
+      padding: 28px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    .sidebar-brand h5 { color: #fff; font-weight: 700; font-size: 1rem; margin: 0; }
+    .sidebar-brand small { color: rgba(255,255,255,0.55); font-size: 0.75rem; }
+    .nav-step {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+      font-size: 0.88rem;
+    }
+    .nav-step:hover, .nav-step.active {
+      color: #fff;
+      background: rgba(255,255,255,0.1);
+      border-left-color: #7eb3ff;
+    }
+    .nav-step .step-num {
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
+    }
+    .nav-step.active .step-num { background: #7eb3ff; color: #1a2456; }
+    .main-content { padding: 32px; }
+    .page-header {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(44,62,122,0.07);
+      border-left: 5px solid var(--accent);
+    }
+    .page-header h2 { color: var(--primary); font-weight: 700; margin: 0 0 6px; }
+    .page-header p { color: #666; margin: 0; }
+    .card-custom {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(44,62,122,0.07);
+      margin-bottom: 24px;
+    }
+    .card-custom h5 { color: var(--primary); font-weight: 700; margin-bottom: 16px; }
+    .stat-box {
+      background: linear-gradient(135deg, var(--accent), #6a9fd8);
+      color: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-box .num { font-size: 2rem; font-weight: 800; }
+    .stat-box .label { font-size: 0.8rem; opacity: 0.85; }
+    .chart-img { width: 100%; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .badge-step { background: var(--accent); color: white; border-radius: 8px; padding: 4px 12px; font-size: 0.78rem; font-weight: 600; }
+    .table thead th { background: var(--primary); color: white; font-weight: 600; }
+    .code-block { background: #1e2336; color: #c9d1d9; border-radius: 10px; padding: 20px; font-family: monospace; font-size: 0.85rem; overflow-x: auto; }
+    .code-block .kw { color: #ff7b72; }
+    .code-block .fn { color: #79c0ff; }
+    .code-block .str { color: #a5d6ff; }
+    .code-block .cm { color: #8b949e; }
+    .btn-primary-custom { background: var(--accent); border: none; color: white; border-radius: 8px; padding: 10px 24px; font-weight: 600; }
+    .btn-primary-custom:hover { background: var(--primary); color: white; }
+    .insight-card { background: linear-gradient(135deg, #f0f5ff, #e8eeff); border-radius: 12px; padding: 18px; border-left: 4px solid var(--accent); margin-bottom: 12px; }
+    .insight-card h6 { color: var(--primary); font-weight: 700; margin-bottom: 4px; }
+    .insight-card p { color: #555; font-size: 0.88rem; margin: 0; }
+  </style>
+</head>
+<body>
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <!-- Sidebar -->
+    <div class="col-auto sidebar" style="width:250px">
+      <div class="sidebar-brand">
+        <h5><i class="fas fa-chart-scatter me-2"></i>Customer Segmentation</h5>
+        <small>K-Means Clustering Project</small>
+      </div>
+      <nav class="mt-2">
+        <a href="/" class="nav-step {% if request.path == '/' %}active{% endif %}">
+          <span class="step-num"><i class="fas fa-home" style="font-size:10px"></i></span>
+          <span>Project Overview</span>
+        </a>
+        <a href="/step1" class="nav-step {% if request.path == '/step1' %}active{% endif %}">
+          <span class="step-num">1</span>
+          <span>Data Loading & Overview</span>
+        </a>
+        <a href="/step2" class="nav-step {% if request.path == '/step2' %}active{% endif %}">
+          <span class="step-num">2</span>
+          <span>Exploratory Data Analysis</span>
+        </a>
+        <a href="/step3" class="nav-step {% if request.path == '/step3' %}active{% endif %}">
+          <span class="step-num">3</span>
+          <span>Optimal K Selection</span>
+        </a>
+        <a href="/step4" class="nav-step {% if request.path == '/step4' %}active{% endif %}">
+          <span class="step-num">4</span>
+          <span>K-Means Clustering</span>
+        </a>
+        <a href="/step5" class="nav-step {% if request.path == '/step5' %}active{% endif %}">
+          <span class="step-num">5</span>
+          <span>Business Insights</span>
+        </a>
+      </nav>
+      <div style="padding: 20px; margin-top: auto; position: absolute; bottom: 0; left: 0; right: 0;">
+        <div style="background: rgba(255,255,255,0.08); border-radius: 10px; padding: 12px; font-size: 0.75rem; color: rgba(255,255,255,0.6);">
+          <div><i class="fab fa-python me-1"></i> Python + Scikit-learn</div>
+          <div class="mt-1"><i class="fas fa-database me-1"></i> Mall Customers Dataset</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="col main-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
