@@ -152,7 +152,7 @@ customer-segmentation-kmeans/
 ## 📚 Dataset
 
 **Mall Customer Segmentation Dataset**
-- Source: [Kaggle — Mall Customer Segmentation Data](https://www.kaggle.com/datasets/vjchoudhary7/customer-segmentation-tutorial-in-python)
+- Source: Mall_Customers.csv
 - 200 customers, 5 columns: CustomerID, Genre, Age, Annual Income (k$), Spending Score (1-100)
 - No missing values — clean dataset ready for analysis
 
